@@ -9,7 +9,6 @@ import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -24,10 +23,10 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
-
-public class login extends AppCompatActivity {
+public class Login extends AppCompatActivity {
 
     public static final int CONNECTION_TIMEOUT = 10000;
     public static final int READ_TIMEOUT = 15000;
@@ -40,35 +39,59 @@ public class login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
     }
 
-    private boolean checkCredentials() {
-        boolean validCredentials = false;
-        EditText emailVal = (EditText)findViewById(R.id.input_email);
-        EditText passwordVal = (EditText)findViewById(R.id.input_password);
+    public void checkCredentials(View view) {
+        EditText emailVal = (EditText) findViewById(R.id.input_email);
+        EditText passwordVal = (EditText) findViewById(R.id.input_password);
         String email = emailVal.getText().toString();
         String password = passwordVal.getText().toString();
 
-        new AsyncLogin().execute(email, password);
+        if (isEmailValid(email)) {
+            new AsyncLogin().execute(email, password);
+        } else {
+            AlertDialog.Builder builder;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder = new AlertDialog.Builder(Login.this, android.R.style.Theme_Material_Dialog_Alert);
+            } else {
+                builder = new AlertDialog.Builder(Login.this);
+            }
+            builder.setTitle("Błąd logowania")
+                    .setMessage("Wprowadź adres email w prawidłowym formacie")
+                    .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            //close dialog
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
 
 
-        return validCredentials;
+
     }
 
-    //email.getText().toString().equals("admin") && password.getText().toString().equals("admin")
+    public boolean isEmailValid(String email)
+    {
+        String regExpn =
+                "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
+                        +"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
+                        +"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
+                        +"([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
 
-    public void loginAction(View view) {
+        CharSequence inputStr = email;
 
-        //change to check in db
-        if (checkCredentials()){
+        Pattern pattern = Pattern.compile(regExpn,Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(inputStr);
 
-
-        } else {
-            //wrong password
-
-        }
+        if(matcher.matches())
+            return true;
+        else
+            return false;
     }
 
     private class AsyncLogin extends AsyncTask<String, String, String> {
-        ProgressDialog pdLoading = new ProgressDialog(login.this);
+        ProgressDialog pdLoading = new ProgressDialog(Login.this);
         HttpURLConnection conn;
         URL url = null;
 
@@ -86,13 +109,7 @@ public class login extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             try {
-
-                // Enter URL address where your php file resides
                 url = new URL("http://10.0.2.2:8000/api/credentialsApi");
-
-                Log.d(TAG, "Url:" + url);//debug
-
-
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -172,16 +189,16 @@ public class login extends AppCompatActivity {
             pdLoading.dismiss();
 
             if (result.equalsIgnoreCase("true")) {
-                Intent intent = new Intent(login.this, DisplayResourcesActivity.class);
+                Intent intent = new Intent(Login.this, DisplayResourcesActivity.class);
                 startActivity(intent);
-                login.this.finish();
+                Login.this.finish();
 
             } else if (result.equalsIgnoreCase("false")) {
                 AlertDialog.Builder builder;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder = new AlertDialog.Builder(login.this, android.R.style.Theme_Material_Dialog_Alert);
+                    builder = new AlertDialog.Builder(Login.this, android.R.style.Theme_Material_Dialog_Alert);
                 } else {
-                    builder = new AlertDialog.Builder(login.this);
+                    builder = new AlertDialog.Builder(Login.this);
                 }
                 builder.setTitle("Błąd logowania")
                         .setMessage("Wprowadzono błędne dane uwierzytelniające")
@@ -194,7 +211,7 @@ public class login extends AppCompatActivity {
                         .show();
 
             } else if (result.equalsIgnoreCase("exception") || result.equalsIgnoreCase("unsuccessful")) {
-                Toast.makeText(login.this, "Problem z połączeniem", Toast.LENGTH_LONG).show();
+                Toast.makeText(Login.this, "Problem z połączeniem", Toast.LENGTH_LONG).show();
             }
         }
 
