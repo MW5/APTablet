@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Aplikacja tabletowa DSU AP</string>
     <string name="display_resources_name">Wybierz zasób do wydania</string>
-    <string name="label_email">Email</string>
+    <string name="label_name">Nazwa użytkownika</string>
     <string name="label_password">Hasło</string>
     <string name="login_btn_text">Zaloguj</string>
+    <string name="confirm">Tak</string>
+    <string name="dismiss">Nie</string>
 </resources>

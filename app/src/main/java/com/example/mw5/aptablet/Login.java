@@ -33,6 +33,8 @@ public class Login extends AppCompatActivity {
 
     private static final String TAG = "DEBUG: "; //debug
 
+    public String name;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,54 +42,11 @@ public class Login extends AppCompatActivity {
     }
 
     public void checkCredentials(View view) {
-        EditText emailVal = (EditText) findViewById(R.id.input_email);
+        EditText nameVal = (EditText) findViewById(R.id.input_name);
         EditText passwordVal = (EditText) findViewById(R.id.input_password);
-        String email = emailVal.getText().toString();
+        name = nameVal.getText().toString(); //need to have it global
         String password = passwordVal.getText().toString();
-
-        if (isEmailValid(email)) {
-            new AsyncLogin().execute(email, password);
-        } else {
-            AlertDialog.Builder builder;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder = new AlertDialog.Builder(Login.this, android.R.style.Theme_Material_Dialog_Alert);
-            } else {
-                builder = new AlertDialog.Builder(Login.this);
-            }
-            builder.setTitle("Błąd logowania")
-                    .setMessage("Wprowadź adres email w prawidłowym formacie")
-                    .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            //close dialog
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
-        }
-
-
-
-    }
-
-    public boolean isEmailValid(String email)
-    {
-        String regExpn =
-                "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
-                        +"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
-                        +"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
-                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
-                        +"([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
-
-        CharSequence inputStr = email;
-
-        Pattern pattern = Pattern.compile(regExpn,Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(inputStr);
-
-        if(matcher.matches())
-            return true;
-        else
-            return false;
+        new AsyncLogin().execute(name, password);
     }
 
     private class AsyncLogin extends AsyncTask<String, String, String> {
@@ -128,7 +87,7 @@ public class Login extends AppCompatActivity {
 
                 // Append parameters to URL
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("email", params[0])
+                        .appendQueryParameter("name", params[0])
                         .appendQueryParameter("password", params[1]);
                 String query = builder.build().getEncodedQuery();
 
@@ -190,6 +149,7 @@ public class Login extends AppCompatActivity {
 
             if (result.equalsIgnoreCase("true")) {
                 Intent intent = new Intent(Login.this, DisplayResourcesActivity.class);
+                intent.putExtra("name", name);
                 startActivity(intent);
                 Login.this.finish();
 
@@ -211,7 +171,7 @@ public class Login extends AppCompatActivity {
                         .show();
 
             } else if (result.equalsIgnoreCase("exception") || result.equalsIgnoreCase("unsuccessful")) {
-                Toast.makeText(Login.this, "Problem z połączeniem", Toast.LENGTH_LONG).show();
+                Toast.makeText(Login.this, "Problem z połączeniem z bazą danych", Toast.LENGTH_LONG).show();
             }
         }
 
