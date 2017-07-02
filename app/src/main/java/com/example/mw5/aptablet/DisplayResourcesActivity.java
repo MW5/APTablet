@@ -90,6 +90,8 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 new AsyncReleaseResource().execute(token, name, userName); //token?
+                                listItems.clear();
+                                new AsyncGetResources().execute(token); //token?
                             }
 
                         })
