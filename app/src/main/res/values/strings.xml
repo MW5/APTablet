@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Aplikacja tabletowa DSU AP</string>
+    <string name="app_name">Aplikacja mobilna DSU AP</string>
     <string name="display_resources_name">Wybierz zasób do wydania</string>
     <string name="label_name">Nazwa użytkownika</string>
     <string name="label_password">Hasło</string>

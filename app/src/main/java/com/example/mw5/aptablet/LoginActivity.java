@@ -23,34 +23,35 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class Login extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     public static final int CONNECTION_TIMEOUT = 10000;
     public static final int READ_TIMEOUT = 15000;
+    public ConfigProvider configProvider;
 
     private static final String TAG = "DEBUG: "; //debug
 
     public String name;
+    public String password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        this.configProvider = new ConfigProvider();
     }
 
     public void checkCredentials(View view) {
         EditText nameVal = (EditText) findViewById(R.id.input_name);
         EditText passwordVal = (EditText) findViewById(R.id.input_password);
         name = nameVal.getText().toString(); //need to have it global
-        String password = passwordVal.getText().toString();
+        password = passwordVal.getText().toString();
         new AsyncLogin().execute(name, password);
     }
 
     private class AsyncLogin extends AsyncTask<String, String, String> {
-        ProgressDialog pdLoading = new ProgressDialog(Login.this);
+        ProgressDialog pdLoading = new ProgressDialog(LoginActivity.this);
         HttpURLConnection conn;
         URL url = null;
 
@@ -68,7 +69,7 @@ public class Login extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             try {
-                url = new URL("http://10.0.2.2:8000/api/credentialsApi");
+                url = new URL(configProvider.getApiUrl()+configProvider.getCredentialsApi());
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -111,7 +112,6 @@ public class Login extends AppCompatActivity {
             try {
 
                 int response_code = conn.getResponseCode();
-
                 // Check if successful connection made
                 if (response_code == HttpURLConnection.HTTP_OK) {
 
@@ -148,17 +148,18 @@ public class Login extends AppCompatActivity {
             pdLoading.dismiss();
 
             if (result.equalsIgnoreCase("true")) {
-                Intent intent = new Intent(Login.this, DisplayResourcesActivity.class);
+//                Intent intent = new Intent(LoginActivity.this, DisplayResourcesActivity.class);
+                Intent intent = new Intent(LoginActivity.this, MenuActivity.class);
                 intent.putExtra("name", name);
                 startActivity(intent);
-                Login.this.finish();
+                LoginActivity.this.finish();
 
             } else if (result.equalsIgnoreCase("false")) {
                 AlertDialog.Builder builder;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder = new AlertDialog.Builder(Login.this, android.R.style.Theme_Material_Dialog_Alert);
+                    builder = new AlertDialog.Builder(LoginActivity.this, android.R.style.Theme_Material_Dialog_Alert);
                 } else {
-                    builder = new AlertDialog.Builder(Login.this);
+                    builder = new AlertDialog.Builder(LoginActivity.this);
                 }
                 builder.setTitle("Błąd logowania")
                         .setMessage("Wprowadzono błędne dane uwierzytelniające")
@@ -171,7 +172,7 @@ public class Login extends AppCompatActivity {
                         .show();
 
             } else if (result.equalsIgnoreCase("exception") || result.equalsIgnoreCase("unsuccessful")) {
-                Toast.makeText(Login.this, "Problem z połączeniem z bazą danych", Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginActivity.this, "Problem z połączeniem z bazą danych", Toast.LENGTH_LONG).show();
             }
         }
 

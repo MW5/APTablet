@@ -4,77 +4,71 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.mw5.aptablet.Login"
-    tools:layout_editor_absoluteY="89dp"
-    tools:layout_editor_absoluteX="0dp">
+    tools:context="com.example.mw5.aptablet.LoginActivity"
+    tools:layout_editor_absoluteX="0dp"
+    tools:layout_editor_absoluteY="89dp">
 
-    <EditText
-        android:id="@+id/input_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textEmailAddress"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintVertical_bias="0.19"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="37dp"
+        tools:layout_editor_absoluteY="418dp">
 
-    <EditText
-        android:id="@+id/input_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textPassword"
-        app:layout_constraintTop_toBottomOf="@+id/input_name"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="@+id/input_name"
-        app:layout_constraintLeft_toLeftOf="@+id/input_name"
-        app:layout_constraintHorizontal_bias="0.0"
-        android:layout_marginEnd="8dp" />
+        <TextView
+            android:id="@+id/email_label"
+            android:layout_width="match_parent"
+            android:layout_height="22dp"
+            android:paddingLeft="60px"
+            android:paddingRight="60px"
+            android:text="@string/label_name"
+            tools:layout_editor_absoluteX="290dp"
+            tools:layout_editor_absoluteY="363dp" />
 
-    <Button
-        android:id="@+id/login_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:onClick="checkCredentials"
-        android:text="@string/login_btn_text"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="@+id/input_password"
-        app:layout_constraintRight_toRightOf="@+id/input_password"
-        app:layout_constraintTop_toBottomOf="@+id/input_password"
-        app:layout_constraintVertical_bias="0.0" />
+        <EditText
+            android:id="@+id/input_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60px"
+            android:layout_marginRight="60px"
+            android:ems="10"
+            android:inputType="textEmailAddress"
+            tools:layout_editor_absoluteX="290dp"
+            tools:layout_editor_absoluteY="399dp" />
 
-    <TextView
-        android:id="@+id/email_label"
-        android:layout_width="129dp"
-        android:layout_height="22dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginTop="15dp"
-        android:text="@string/label_name"
-        app:layout_constraintRight_toLeftOf="@+id/input_name"
-        app:layout_constraintTop_toTopOf="@+id/input_name" />
+        <TextView
+            android:id="@+id/password_label"
+            android:layout_width="match_parent"
+            android:layout_height="22dp"
+            android:paddingLeft="60px"
+            android:paddingRight="60px"
+            android:text="@string/label_password"
+            tools:layout_editor_absoluteX="290dp"
+            tools:layout_editor_absoluteY="459dp" />
 
-    <TextView
-        android:id="@+id/password_label"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginTop="15dp"
-        android:text="@string/label_password"
-        app:layout_constraintRight_toLeftOf="@+id/input_password"
-        app:layout_constraintTop_toTopOf="@+id/input_password" />
+        <EditText
+            android:id="@+id/input_password"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginLeft="60px"
+            android:layout_marginRight="60px"
+            android:ems="10"
+            android:inputType="textPassword"
+            tools:layout_editor_absoluteX="290dp"
+            tools:layout_editor_absoluteY="493dp" />
+
+        <Button
+            android:id="@+id/login_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60px"
+            android:layout_marginRight="60px"
+            android:onClick="checkCredentials"
+            android:text="@string/login_btn_text"
+            tools:layout_editor_absoluteX="356dp"
+            tools:layout_editor_absoluteY="547dp" />
+
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

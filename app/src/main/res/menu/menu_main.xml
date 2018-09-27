@@ -5,5 +5,5 @@
         android:id="@+id/logout"
         android:title="Wyloguj"
         app:showAsAction="always"
-        android:orderInCategory="0"/>
+        android:orderInCategory="1"/>
 </menu>

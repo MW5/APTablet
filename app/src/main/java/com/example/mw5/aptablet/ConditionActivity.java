@@ -7,8 +7,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,8 +34,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-
-public class DisplayResourcesActivity extends AppCompatActivity  {
+public class ConditionActivity extends AppCompatActivity {
     public ConfigProvider configProvider;
     //extends ListActivity
     private ArrayList<String> listItems=new ArrayList<String>();
@@ -55,11 +54,13 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
 
     String userName;
 
+    String taskType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         this.configProvider = new ConfigProvider();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_display_resources);
+        setContentView(R.layout.activity_condition);
         adapter=new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1,
                 listItems);
@@ -67,43 +68,67 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
         //get logged user email
         userName = getIntent().getExtras().getString("name");
 
+        this.taskType = "weryfikacja stanu";
+
         //initialize listView
-        lV = (ListView) findViewById(R.id.res_list);
+        lV = (ListView) findViewById(R.id.con_list);
 
         lV.setAdapter(adapter);
-        new AsyncGetResources().execute(token); //token?
+        new ConditionActivity.AsyncGetTasks().execute(token); //token?
 
         lV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
                 final String name = (String) adapter.getItemAtPosition(position);
+                final String regNum = name.substring(0,name.indexOf(":"));
 
                 AlertDialog.Builder builder;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder = new AlertDialog.Builder(DisplayResourcesActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                    builder = new AlertDialog.Builder(ConditionActivity.this, android.R.style.Theme_Material_Dialog_Alert);
                 } else {
-                    builder = new AlertDialog.Builder(DisplayResourcesActivity.this);
+                    builder = new AlertDialog.Builder(ConditionActivity.this);
                 }
-                builder.setTitle("Potwierdzenie")
-                        .setMessage("Czy napewno wydać zasób: "+ name)
-                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                new AsyncReleaseResource().execute(token, name, userName); //token?
-                                listItems.clear();
-                                new AsyncGetResources().execute(token); //token?
-                            }
+                if (name.indexOf("nowe") > -1) {
+                    builder.setTitle("Potwierdzenie")
+                            .setMessage("Czy napewno rozpocząć zlecenie dla samochodu: " + regNum)
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    new ConditionActivity.AsyncServeTask().execute(token, regNum, taskType, "begin", userName); //token?
+                                    listItems.clear();
+                                    new ConditionActivity.AsyncGetTasks().execute(token); //token?
+                                }
 
-                        })
-                        .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                //close dialog
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
-                Log.d(TAG, "Clicked: "+name);
+                            })
+                            .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //close dialog
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                    Log.d(TAG, "Clicked: " + name);
+                } else {
+                    builder.setTitle("Potwierdzenie")
+                            .setMessage("Czy napewno zakończyć zlecenie dla samochodu: " + regNum)
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    new ConditionActivity.AsyncServeTask().execute(token, regNum, taskType, "end", userName); //token?
+                                    listItems.clear();
+                                    new ConditionActivity.AsyncGetTasks().execute(token); //token?
+                                }
+
+                            })
+                            .setNeutralButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //close dialog
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                    Log.d(TAG, "Clicked: " + name);
+                }
             }
         });
 
@@ -124,9 +149,9 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.logout) {
-            Intent intent = new Intent(DisplayResourcesActivity.this, LoginActivity.class);
+            Intent intent = new Intent(ConditionActivity.this, LoginActivity.class);
             startActivity(intent);
-            DisplayResourcesActivity.this.finish();
+            ConditionActivity.this.finish();
             return true;
         }
 
@@ -139,9 +164,8 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
             try {
                 JSONObject oneObject = jArray.getJSONObject(i);
                 // Pulling items from the array
-                if (oneObject.getInt("quantity") > 0) {
-                    listItems.add(oneObject.getString("name"));
-                }
+                listItems.add(oneObject.getString("car_reg_num")+": "+
+                        oneObject.getString("status"));
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -150,8 +174,8 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
         adapter.notifyDataSetChanged();
     }
 
-    private class AsyncGetResources extends AsyncTask<String, String, String> {
-        ProgressDialog pdLoading = new ProgressDialog(DisplayResourcesActivity.this);
+    private class AsyncGetTasks extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(ConditionActivity.this);
         HttpURLConnection conn;
         URL url = null;
 
@@ -169,7 +193,7 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
         @Override
         protected String doInBackground(String... params) {
             try {
-                url = new URL(configProvider.getApiUrl()+configProvider.getGetResourcesApi());
+                url = new URL(configProvider.getApiUrl()+configProvider.getGetConditionTasksApi());
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -258,9 +282,9 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
             } else if (result.equalsIgnoreCase("false")) { //change the result !!!
                 AlertDialog.Builder builder;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder = new AlertDialog.Builder(DisplayResourcesActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                    builder = new AlertDialog.Builder(ConditionActivity.this, android.R.style.Theme_Material_Dialog_Alert);
                 } else {
-                    builder = new AlertDialog.Builder(DisplayResourcesActivity.this);
+                    builder = new AlertDialog.Builder(ConditionActivity.this);
                 }
                 builder.setTitle("Błąd")
                         .setMessage("Wystąpił błąd pobierania danych")
@@ -273,14 +297,14 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
                         .show();
 
             } else if (result.equalsIgnoreCase("exception") || result.equalsIgnoreCase("unsuccessful")) {
-                Toast.makeText(DisplayResourcesActivity.this, "Problem z połączeniem z bazą danych", Toast.LENGTH_LONG).show();
+                Toast.makeText(ConditionActivity.this, "Problem z połączeniem z bazą danych", Toast.LENGTH_LONG).show();
             }
         }
     }
 
-    //warehouse release
-    private class AsyncReleaseResource extends AsyncTask<String, String, String> {
-        ProgressDialog pdLoading = new ProgressDialog(DisplayResourcesActivity.this);
+    //serve task
+    private class AsyncServeTask extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(ConditionActivity.this);
         HttpURLConnection conn;
         URL url = null;
 
@@ -298,7 +322,7 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
         @Override
         protected String doInBackground(String... params) {
             try {
-                url = new URL(configProvider.getApiUrl()+configProvider.getReleaseResourceApi());
+                url = new URL(configProvider.getApiUrl()+configProvider.getServeTaskApi());
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -315,8 +339,10 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
 
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("token", params[0])
-                        .appendQueryParameter("name", params[1])
-                        .appendQueryParameter("userName", params[2]);
+                        .appendQueryParameter("regNum", params[1])
+                        .appendQueryParameter("taskType", params[2])
+                        .appendQueryParameter("operationType", params[3])
+                        .appendQueryParameter("userName", params[4]);
                 String query = builder.build().getEncodedQuery();
 
                 OutputStream os = conn.getOutputStream();
@@ -338,6 +364,7 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
 
                 int response_code = conn.getResponseCode();
                 Log.d("MYINT", "value: " + response_code);
+
                 // Check if successful connection made
 
                 if (response_code == HttpURLConnection.HTTP_OK) {
@@ -377,15 +404,15 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
             Log.d(TAG, result);//debug
 
             if (result.equalsIgnoreCase("true")) {
-                Toast.makeText(DisplayResourcesActivity.this, "Wydano zasób", Toast.LENGTH_LONG).show();
-                    Log.d(TAG, result);//debug
+                Toast.makeText(ConditionActivity.this, "Wydano zasób", Toast.LENGTH_LONG).show();
+                Log.d(TAG, result);//debug
 
             } else if (result.equalsIgnoreCase("false")) {
                 AlertDialog.Builder builder;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder = new AlertDialog.Builder(DisplayResourcesActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                    builder = new AlertDialog.Builder(ConditionActivity.this, android.R.style.Theme_Material_Dialog_Alert);
                 } else {
-                    builder = new AlertDialog.Builder(DisplayResourcesActivity.this);
+                    builder = new AlertDialog.Builder(ConditionActivity.this);
                 }
                 builder.setTitle("Błąd")
                         .setMessage("Brak zasobów na stanie magazynowym")
@@ -398,9 +425,8 @@ public class DisplayResourcesActivity extends AppCompatActivity  {
                         .show();
 
             } else if (result.equalsIgnoreCase("exception") || result.equalsIgnoreCase("unsuccessful")) {
-                Toast.makeText(DisplayResourcesActivity.this, "Problem z połączeniem z bazą danych", Toast.LENGTH_LONG).show();
+                Toast.makeText(ConditionActivity.this, "Problem z połączeniem z bazą danych", Toast.LENGTH_LONG).show();
             }
         }
     }
-
 }
