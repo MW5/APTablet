@@ -404,7 +404,7 @@ public class ConditionActivity extends AppCompatActivity {
             Log.d(TAG, result);//debug
 
             if (result.equalsIgnoreCase("true")) {
-                Toast.makeText(ConditionActivity.this, "Wydano zasób", Toast.LENGTH_LONG).show();
+                Toast.makeText(ConditionActivity.this, "Zmieniono status zlecenia", Toast.LENGTH_LONG).show();
                 Log.d(TAG, result);//debug
 
             } else if (result.equalsIgnoreCase("false")) {
@@ -415,7 +415,7 @@ public class ConditionActivity extends AppCompatActivity {
                     builder = new AlertDialog.Builder(ConditionActivity.this);
                 }
                 builder.setTitle("Błąd")
-                        .setMessage("Brak zasobów na stanie magazynowym")
+                        .setMessage("Wystąpił problem")
                         .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 //close dialog
